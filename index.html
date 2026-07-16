@@ -395,10 +395,9 @@
 
   .result-ornament {
     font-size: 1.8rem;
-    color: var(--gold);
+    color: rgba(255,255,255,0.9);
     letter-spacing: 0.3em;
     margin-bottom: 20px;
-    opacity: 0.8;
   }
 
   .result-title {
@@ -406,7 +405,10 @@
     font-weight: 300;
     font-size: clamp(1.4rem, 4vw, 2rem);
     letter-spacing: 0.2em;
-    color: var(--gold-light);
+    background: linear-gradient(135deg, #ffffff 0%, #e8d8ff 40%, #c8b8ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 8px;
   }
 
@@ -501,14 +503,14 @@
 
   .legend-name {
     font-size: 0.8rem;
-    color: var(--text-sub);
+    color: rgba(255,255,255,0.9);
     letter-spacing: 0.1em;
     min-width: 90px;
   }
 
   .legend-pct {
     font-size: 0.8rem;
-    color: var(--gold);
+    color: rgba(255,255,255,0.9);
     min-width: 36px;
     text-align: right;
     letter-spacing: 0.05em;
@@ -794,7 +796,7 @@ const CATEGORIES = [
     colorNames: ['淡いラベンダー','バイオレット','ホログラム','電氣的な白','ネオンブルー','シアン'],
     colorSpecial: [null, null, 'hologram', null, null, null],
     motifs: ['神聖幾何学','宇宙技術','光の回路','周波数','宇宙都市','エネルギー装置'],
-    chartColor: '#30b890',
+    chartColor: '#b090e8',
     desc: 'あなたの魂には、アルクトゥルスの高次知性と宇宙技術の記憶が宿っています。スピリチュアルな感覚を体系化し、見えないエネルギーを現実の形に変換する設計者の才能があります。AIやテクノロジーにも霊的な可能性を感じ取る、未来型のライトワーカーです。'
   },
   {
@@ -843,7 +845,8 @@ const CATEGORIES = [
     colorNames: ['オパール／虹色','パールホワイト','ラベンダー','淡いピンク','アクアブルー','ターコイズ'],
     colorSpecial: ['opal', null, null, null, null, null],
     motifs: ['海','イルカ','人魚','女神','妖精','水晶の浜辺'],
-    chartColor: '#38b8b0',
+    chartColor: 'url(#lemuria-rainbow)',
+    chartColorFallback: '#38c8c0',
     desc: 'あなたの魂には、レムリアのやわらかな海の記憶が深く流れています。海や水辺に懐かしさと切なさを感じ、目に見えない世界——妖精や精霊——をリアルに感じ取る繊細な魂です。争うのではなく、調和と祈りによって愛を思い出させる存在です。'
   },
   {
@@ -1147,6 +1150,25 @@ function showResult() {
 function renderDonut(sorted, percents) {
   const svg = document.getElementById('donut-svg');
   svg.innerHTML = '';
+
+  // レムリア虹色グラデーション定義
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const grad = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+  grad.setAttribute('id','lemuria-rainbow');
+  grad.setAttribute('x1','0%'); grad.setAttribute('y1','0%');
+  grad.setAttribute('x2','100%'); grad.setAttribute('y2','100%');
+  const stops = [
+    ['0%','#f8c0d8'],['20%','#c0d0f8'],['40%','#c0f0e0'],
+    ['60%','#f0f0c0'],['80%','#f0c8f0'],['100%','#c0e8f8']
+  ];
+  stops.forEach(([offset, color]) => {
+    const stop = document.createElementNS('http://www.w3.org/2000/svg','stop');
+    stop.setAttribute('offset', offset);
+    stop.setAttribute('stop-color', color);
+    grad.appendChild(stop);
+  });
+  defs.appendChild(grad);
+  svg.appendChild(defs);
   const cx=100, cy=100, r=80, strokeW=28;
   const circumference = 2 * Math.PI * r;
   let offset = 0;
@@ -1184,13 +1206,17 @@ function renderLegend(sorted, percents) {
   container.innerHTML = '';
   sorted.forEach(cat => {
     const pct = percents[cat.id];
+    const isLemuria = cat.id === 'lemuria';
+    const dotStyle = isLemuria
+      ? 'background: conic-gradient(#f8c0d8, #c0d0f8, #c0f0e0, #f0f0c0, #f0c8f0, #c0e8f8, #f8c0d8);'
+      : `background:${cat.chartColorFallback || cat.chartColor};`;
     const item = document.createElement('div');
     item.className = 'legend-item';
     item.innerHTML = `
-      <div class="legend-color" style="background:${cat.chartColor}"></div>
+      <div class="legend-color" style="${dotStyle}"></div>
       <div class="legend-name">${cat.name}</div>
       <div class="legend-bar-wrap">
-        <div class="legend-bar" style="width:${pct}%;background:${cat.chartColor}"></div>
+        <div class="legend-bar" style="width:${pct}%;background:${cat.chartColorFallback || cat.chartColor}"></div>
       </div>
       <div class="legend-pct">${pct}%</div>
     `;
