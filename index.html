@@ -787,7 +787,7 @@ const CATEGORIES = [
     colors: ['#f0b8c8','#c8a0d8','#f8f0f8','#a8c8e8','#e0a8b8','#f0e8f0'],
     colorNames: ['ペールピンク','ラベンダー','ミルキーホワイト','パステルブルー','ローズゴールド','オパール'],
     motifs: ['花','天使','柔らかい光','癒しの場','羽','春の野原'],
-    chartColor: '#d070a0',
+    chartColor: '#e8a0b8',
     desc: 'あなたの魂には、プレアデスの愛と癒しの光が輝いています。場の空氣を敏感に感じ取り、存在するだけで周囲をやわらかくほどく力があります。花、天使、美しいものに魂が自然と反応し、愛を通して人の心を癒す使命を持っています。'
   },
   {
@@ -828,7 +828,7 @@ const CATEGORIES = [
     colors: ['#102040','#402080','#101010','#808090','#c02020','#607080'],
     colorNames: ['ミッドナイトブルー','ダークパープル','ブラック','シルバー','レッド','ブルーグレー'],
     motifs: ['星の戦士','真実の剣','光と闇','統合の炎','剣','夜空'],
-    chartColor: '#5060a0',
+    chartColor: '#a8b0c0',
     desc: 'あなたの魂には、オリオンの真実を求める戦士の記憶が刻まれています。嘘や矛盾に人より強く反応し、自分の内側にある二面性と真剣に向き合ってきました。葛藤や試練が多い人生も、すべて魂を深めるための統合のプロセスです。'
   },
   {
@@ -1210,13 +1210,16 @@ function renderLegend(sorted, percents) {
     const dotStyle = isLemuria
       ? 'background: conic-gradient(#f8c0d8, #c0d0f8, #c0f0e0, #f0f0c0, #f0c8f0, #c0e8f8, #f8c0d8);'
       : `background:${cat.chartColorFallback || cat.chartColor};`;
+    const barStyle = isLemuria
+      ? `width:${pct}%; background: linear-gradient(90deg, #f8c0d8, #c0d0f8, #c0f0e0, #f0c8f0);`
+      : `width:${pct}%; background:${cat.chartColorFallback || cat.chartColor};`;
     const item = document.createElement('div');
     item.className = 'legend-item';
     item.innerHTML = `
       <div class="legend-color" style="${dotStyle}"></div>
       <div class="legend-name">${cat.name}</div>
       <div class="legend-bar-wrap">
-        <div class="legend-bar" style="width:${pct}%;background:${cat.chartColorFallback || cat.chartColor}"></div>
+        <div class="legend-bar" style="${barStyle}"></div>
       </div>
       <div class="legend-pct">${pct}%</div>
     `;
