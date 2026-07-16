@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>魂のルーツ診断</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Serif+JP:wght@300;400&family=Noto+Sans+JP:wght@300;400&display=swap');
+
+  :root {
+    --void: #f0eef8;
+    --deep: #e8e4f4;
+    --nebula: #ddd8f0;
+    --purple-mid: #b8a8e0;
+    --violet: #7a5ab8;
+    --violet-light: #9b7dd8;
+    --gold: #a07820;
+    --gold-light: #c09030;
+    --gold-soft: #d4a840;
+    --stardust: #4a3878;
+    --white-soft: #2a1e50;
+    --text-main: #2a1e50;
+    --text-sub: #4a3878;
+    --text-muted: #8878b8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--text-main);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 星空背景 */
+  .stars {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite;
+    opacity: 0;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; }
+    50% { opacity: var(--op, 0.8); }
+  }
+
+  /* nebula glow */
+  .nebula-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      linear-gradient(170deg, #1a1540 0%, #1e2060 18%, #152858 35%, #1a1e70 52%, #221548 68%, #2a1858 85%, #1e1645 100%),
+      radial-gradient(ellipse 65% 55% at 20% 20%, rgba(100,120,255,0.45) 0%, transparent 65%),
+      radial-gradient(ellipse 55% 65% at 80% 15%, rgba(80,60,180,0.40) 0%, transparent 65%),
+      radial-gradient(ellipse 75% 45% at 50% 80%, rgba(120,80,200,0.35) 0%, transparent 65%),
+      radial-gradient(ellipse 45% 55% at 65% 50%, rgba(60,100,200,0.25) 0%, transparent 65%);
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ===== SCREEN MANAGEMENT ===== */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ===== TOP SCREEN ===== */
+  #screen-top {
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  #screen-top.active {
+    display: flex;
+  }
+
+  .top-ornament {
+    font-size: 2.4rem;
+    letter-spacing: 0.3em;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 32px;
+  }
+
+  .top-title {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 300;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    letter-spacing: 0.25em;
+    background: linear-gradient(135deg, #ffffff 0%, #e8d8ff 40%, #c8b8ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .top-divider {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+    margin: 0 auto 28px;
+  }
+
+  .top-subtitle {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 300;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 0.15em;
+    line-height: 2;
+    margin-bottom: 48px;
+  }
+
+  .top-note {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.1em;
+    margin-bottom: 40px;
+    line-height: 2;
+  }
+
+  .btn-start {
+    display: inline-block;
+    padding: 16px 48px;
+    background: linear-gradient(135deg, #9070d0, #6a48b8);
+    border: 1px solid #c09030;
+    border-radius: 2px;
+    color: #fff8e0;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(120,90,200,0.25);
+  }
+  .btn-start::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,240,180,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+  .btn-start:hover::before { left: 100%; }
+  .btn-start:hover {
+    background: linear-gradient(135deg, #a080e0, #7a58c8);
+    box-shadow: 0 8px 32px rgba(120,90,200,0.4);
+    transform: translateY(-2px);
+  }
+
+  /* ===== QUESTION SCREEN ===== */
+  #screen-quiz {
+    padding: 48px 20px 80px;
+  }
+
+  .quiz-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .progress-label {
+    font-size: 0.75rem;
+    color: #8878b8;
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 8px;
+    height: 2px;
+    background: rgba(150,120,210,0.2);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--violet), var(--gold));
+    border-radius: 1px;
+    transition: width 0.4s ease;
+  }
+
+  .question-card {
+    background: rgba(255, 252, 255, 0.75);
+    border: 1px solid rgba(150,120,210,0.3);
+    border-radius: 4px;
+    padding: 36px 32px;
+    margin-bottom: 28px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 40px rgba(120,90,180,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+
+  .question-number {
+    font-size: 0.7rem;
+    color: #a07820;
+    letter-spacing: 0.3em;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(1.05rem, 3vw, 1.25rem);
+    font-weight: 400;
+    line-height: 1.9;
+    letter-spacing: 0.05em;
+    color: #2a1e50;
+    margin-bottom: 32px;
+  }
+
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .scale-label {
+    font-size: 0.72rem;
+    color: #5a4890;
+    letter-spacing: 0.02em;
+    text-align: center;
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .scale-options {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .scale-btn {
+    flex: 1;
+    max-width: 80px;
+    padding: 14px 4px;
+    background: rgba(240, 236, 255, 0.7);
+    border: 1px solid rgba(150,120,210,0.35);
+    border-radius: 2px;
+    color: #5a4890;
+    font-size: 1rem;
+    letter-spacing: 0;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .btn-icon {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 1.2rem;
+    line-height: 1;
+    display: block;
+    letter-spacing: -0.05em;
+  }
+  .scale-btn:hover {
+    background: rgba(180,150,240,0.3);
+    border-color: var(--violet-light);
+    color: #3a2870;
+  }
+  .scale-btn.selected {
+    background: linear-gradient(135deg, #c0a8f0, #8a60d0);
+    border-color: var(--gold);
+    color: #fff8e8;
+    box-shadow: 0 0 16px rgba(140,100,220,0.4);
+  }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .btn-nav {
+    padding: 12px 28px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(150,120,210,0.4);
+    border-radius: 2px;
+    color: #5a4890;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-nav:hover {
+    border-color: var(--violet);
+    color: #3a2870;
+    background: rgba(200,180,255,0.3);
+  }
+  .btn-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .btn-next {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #9070d0, #6a48b8);
+    border: 1px solid #c09030;
+    border-radius: 2px;
+    color: #fff8e0;
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .btn-next:hover {
+    background: linear-gradient(135deg, #a080e0, #7a58c8);
+    box-shadow: 0 4px 20px rgba(120,90,200,0.35);
+  }
+  .btn-next:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* ===== RESULT SCREEN ===== */
+  #screen-result {
+    padding: 60px 20px 80px;
+  }
+
+  .result-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .result-ornament {
+    font-size: 1.8rem;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  .result-title {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 300;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    letter-spacing: 0.2em;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+  }
+
+  .result-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+  }
+
+  /* ドーナツグラフ */
+  .chart-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 48px;
+  }
+
+  .donut-container {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin-bottom: 32px;
+  }
+
+  .donut-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 0 20px rgba(107,63,160,0.4));
+  }
+
+  .donut-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .donut-center-label {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .donut-center-name {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.1rem;
+    color: var(--gold-light);
+    letter-spacing: 0.1em;
+    display: block;
+  }
+
+  /* 凡例 */
+  .legend {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .legend-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .legend-name {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    letter-spacing: 0.1em;
+    min-width: 90px;
+  }
+
+  .legend-pct {
+    font-size: 0.8rem;
+    color: var(--gold);
+    min-width: 36px;
+    text-align: right;
+    letter-spacing: 0.05em;
+  }
+
+  /* 上位カテゴリーの詳細 */
+  .result-details {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+
+  .detail-card {
+    background: rgba(255, 252, 255, 0.75);
+    border-radius: 4px;
+    padding: 28px 28px;
+    border-left: 3px solid #9070d0;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 30px rgba(120,90,180,0.12);
+  }
+
+  .detail-card:first-child {
+    border-left-color: var(--gold);
+  }
+
+  .detail-rank {
+    font-size: 0.65rem;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    margin-bottom: 6px;
+  }
+
+  .detail-name {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: var(--white-soft);
+    letter-spacing: 0.15em;
+    margin-bottom: 4px;
+  }
+
+  .detail-pct {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  .detail-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .detail-desc {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.88rem;
+    font-weight: 300;
+    line-height: 2;
+    color: #3a2e68;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+  }
+
+  .detail-colors-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+  }
+
+  .detail-colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-bottom: 14px;
+  }
+
+  .color-chip-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .color-chip {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(150,120,200,0.25);
+    flex-shrink: 0;
+    cursor: default;
+    transition: transform 0.2s;
+  }
+  .color-chip:hover { transform: scale(1.2); }
+
+  .color-chip-name {
+    font-size: 0.7rem;
+    color: #6858a8;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .detail-motifs-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 8px;
+  }
+
+  .detail-motifs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .motif-tag {
+    padding: 4px 12px;
+    background: rgba(107,63,160,0.2);
+    border: 1px solid rgba(107,63,160,0.3);
+    border-radius: 20px;
+    font-size: 0.72rem;
+    color: var(--text-sub);
+    letter-spacing: 0.1em;
+  }
+
+  .btn-retry {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 16px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(150,120,210,0.4);
+    border-radius: 2px;
+    color: #5a4890;
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+  .btn-retry:hover {
+    border-color: #9070d0;
+    color: #3a2870;
+    background: rgba(200,180,255,0.3);
+  }
+
+  /* アニメーション */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in {
+    animation: fadeInUp 0.6s ease forwards;
+  }
+  .fade-in-delay-1 { animation-delay: 0.1s; opacity: 0; }
+  .fade-in-delay-2 { animation-delay: 0.2s; opacity: 0; }
+  .fade-in-delay-3 { animation-delay: 0.3s; opacity: 0; }
+
+  @media (max-width: 480px) {
+    .question-card { padding: 24px 20px; }
+    .scale-btn { padding: 12px 2px; font-size: 0.7rem; }
+    .detail-card { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 星空 -->
+<div class="nebula-bg"></div>
+<div class="stars" id="stars"></div>
+
+<!-- TOP SCREEN -->
+<div id="screen-top" class="screen active">
+  <div class="container">
+    <div class="top-ornament fade-in">✦ ✧ ✦</div>
+    <h1 class="top-title fade-in fade-in-delay-1">魂のルーツ診断</h1>
+    <div class="top-divider fade-in fade-in-delay-2"></div>
+    <p class="top-subtitle fade-in fade-in-delay-2">
+      あなたの魂が経由してきた星と文明を<br>紐解く旅へ
+    </p>
+    <p class="top-note fade-in fade-in-delay-3">
+      30の問いに直感でお答えください<br>
+      あなただけの魂の成分が現れます
+    </p>
+    <button class="btn-start fade-in fade-in-delay-3" onclick="startQuiz()">
+      診断をはじめる
+    </button>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="screen-quiz" class="screen">
+  <div class="container">
+    <div class="quiz-header">
+      <div class="progress-label" id="progress-label">1 / 30</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-bar" style="width:3.3%"></div>
+      </div>
+    </div>
+
+    <div class="question-card" id="question-card">
+      <div class="question-number" id="q-number">Q 01</div>
+      <div class="question-text" id="q-text"></div>
+
+      <div class="scale-labels">
+        <div class="scale-label">とても<br>当てはまる</div>
+        <div class="scale-label">少し<br>当てはまる</div>
+        <div class="scale-label">どちらでも<br>ない</div>
+        <div class="scale-label">あまり<br>当てはまらない</div>
+        <div class="scale-label">全く<br>当てはまらない</div>
+      </div>
+
+      <div class="scale-options" id="scale-options">
+        <button class="scale-btn" onclick="selectAnswer(2, this)"><span class="btn-icon">◎</span></button>
+        <button class="scale-btn" onclick="selectAnswer(1, this)"><span class="btn-icon">◯</span></button>
+        <button class="scale-btn" onclick="selectAnswer(0, this)"><span class="btn-icon">△</span></button>
+        <button class="scale-btn" onclick="selectAnswer(-1, this)"><span class="btn-icon">✕</span></button>
+        <button class="scale-btn" onclick="selectAnswer(-2, this)"><span class="btn-icon">✕✕</span></button>
+      </div>
+    </div>
+
+    <div class="quiz-nav">
+      <button class="btn-nav" id="btn-prev" onclick="prevQuestion()" disabled>← 戻る</button>
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()" disabled>次へ →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="screen-result" class="screen">
+  <div class="container">
+    <div class="result-header fade-in">
+      <div class="result-ornament">✦</div>
+      <h2 class="result-title">あなたの魂の成分</h2>
+      <p class="result-subtitle">SOUL COMPOSITION</p>
+    </div>
+
+    <div class="chart-wrap fade-in fade-in-delay-1">
+      <div class="donut-container">
+        <svg class="donut-svg" viewBox="0 0 200 200" id="donut-svg"></svg>
+        <div class="donut-center">
+          <span class="donut-center-label">最も強い魂の記憶</span>
+          <span class="donut-center-name" id="donut-top-name"></span>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="result-details fade-in fade-in-delay-2" id="result-details"></div>
+
+    <button class="btn-retry fade-in fade-in-delay-3" onclick="retryQuiz()">
+      もう一度診断する
+    </button>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const CATEGORIES = [
+  {
+    id: 'sirius', name: 'シリウス', nameEn: 'Sirius',
+    colors: ['#1a3a6e','#2255a8','#1e8fa8','#5cc8d8','#c0d8e8','#d4c080'],
+    colorNames: ['ディープブルー','ロイヤルブルー','ターコイズ','アクアブルー','シルバー','ホワイトゴールド'],
+    motifs: ['古代神殿','イルカ','クジラ','深海','水の女神','神官'],
+    chartColor: '#2a7fc0',
+    desc: 'あなたの魂には、シリウスの深い叡智と静けさが流れています。感情を大きく表に出さなくても、内側には強い使命感と守護の意志を持っています。人を「癒す」というより「本質を照らす」存在として、静かに人や場を導く力があります。'
+  },
+  {
+    id: 'pleiades', name: 'プレアデス', nameEn: 'Pleiades',
+    colors: ['#f0b8c8','#c8a0d8','#f8f0f8','#a8c8e8','#e0a8b8','#f0e8f0'],
+    colorNames: ['ペールピンク','ラベンダー','ミルキーホワイト','パステルブルー','ローズゴールド','オパール'],
+    motifs: ['花','天使','柔らかい光','癒しの場','羽','春の野原'],
+    chartColor: '#d070a0',
+    desc: 'あなたの魂には、プレアデスの愛と癒しの光が輝いています。場の空氣を敏感に感じ取り、存在するだけで周囲をやわらかくほどく力があります。花、天使、美しいものに魂が自然と反応し、愛を通して人の心を癒す使命を持っています。'
+  },
+  {
+    id: 'arcturus', name: 'アルクトゥルス', nameEn: 'Arcturus',
+    colors: ['#c8b0f0','#9060d8','#e0d8ff','#f5f0ff','#4080f0','#40c8e8'],
+    colorNames: ['淡いラベンダー','バイオレット','ホログラム','電氣的な白','ネオンブルー','シアン'],
+    colorSpecial: [null, null, 'hologram', null, null, null],
+    motifs: ['神聖幾何学','宇宙技術','光の回路','周波数','宇宙都市','エネルギー装置'],
+    chartColor: '#30b890',
+    desc: 'あなたの魂には、アルクトゥルスの高次知性と宇宙技術の記憶が宿っています。スピリチュアルな感覚を体系化し、見えないエネルギーを現実の形に変換する設計者の才能があります。AIやテクノロジーにも霊的な可能性を感じ取る、未来型のライトワーカーです。'
+  },
+  {
+    id: 'andromeda', name: 'アンドロメダ', nameEn: 'Andromeda',
+    colors: ['#7030c0','#4040c8','#c020a0','#4060d0','#101030','#f0f0ff'],
+    colorNames: ['ギャラクシーパープル','インディゴ','マゼンタ','コズミックブルー','星空色','虹色の光'],
+    motifs: ['銀河','自由の翼','枠を超える扉','宇宙の旅','無限','星雲'],
+    chartColor: '#7050c8',
+    desc: 'あなたの魂には、アンドロメダの自由と革新のエネルギーが満ちています。既存の枠組みに違和感を覚え、根本から問い直す改革者の視点を持っています。深く関わりながらも依存しない、自分の感覚に嘘をつけない真の自由人です。'
+  },
+  {
+    id: 'lyra', name: 'リラ', nameEn: 'Lyra',
+    colors: ['#d4a010','#e8c830','#c06010','#e08030','#d89060','#f0c890'],
+    colorNames: ['ゴールド','サンイエロー','アンバー','オレンジ','ブロンズ','ピーチゴールド'],
+    motifs: ['獅子','太陽','王冠','古代王国','猫科','原初の炎'],
+    chartColor: '#d09020',
+    desc: 'あなたの魂には、リラの原初の王族性と創造力が宿っています。「ここは本当の居場所ではない」という深い望郷感と、誰かに従うのではなく自分の道を切り開く誇り高い魂です。猫科の動物や太陽に強く惹かれ、生命力と表現力にあふれています。'
+  },
+  {
+    id: 'vega', name: 'ベガ', nameEn: 'Vega',
+    colors: ['#80c0e0','#80e0c0','#c0c0d8','#a0d0d0','#f0f0f8','#d8e8f8'],
+    colorNames: ['アイスブルー','ミントグリーン','シルバー','淡いターコイズ','パールホワイト','透明な青'],
+    motifs: ['竪琴','音の光','色彩','自然の調和','透明な風','音楽'],
+    chartColor: '#60b0c8',
+    desc: 'あなたの魂には、ベガの美しい調和と芸術的知性が流れています。音楽、色彩、詩、自然の美しさに魂の奥から反応し、感情を表に出さなくても内側に揺るがない価値基準を持っています。静かな存在感で場の周波数を整える、洗練された美の使者です。'
+  },
+  {
+    id: 'orion', name: 'オリオン', nameEn: 'Orion',
+    colors: ['#102040','#402080','#101010','#808090','#c02020','#607080'],
+    colorNames: ['ミッドナイトブルー','ダークパープル','ブラック','シルバー','レッド','ブルーグレー'],
+    motifs: ['星の戦士','真実の剣','光と闇','統合の炎','剣','夜空'],
+    chartColor: '#5060a0',
+    desc: 'あなたの魂には、オリオンの真実を求める戦士の記憶が刻まれています。嘘や矛盾に人より強く反応し、自分の内側にある二面性と真剣に向き合ってきました。葛藤や試練が多い人生も、すべて魂を深めるための統合のプロセスです。'
+  },
+  {
+    id: 'venus', name: '金星', nameEn: 'Venus',
+    colors: ['#f0a0b8','#a0d0a0','#40c080','#f0d890','#c07040','#f8f0e8'],
+    colorNames: ['ローズピンク','ペールグリーン','エメラルド','シャンパンゴールド','コッパー','パールホワイト'],
+    motifs: ['薔薇','ハート','真珠','女神','豊かさ','愛の神殿'],
+    chartColor: '#d06888',
+    desc: 'あなたの魂には、金星の愛と美の周波数が輝いています。美しいもの、香り、空間の心地よさへの感受性がとても高く、愛を受け取ること・与えることが人生の大きなテーマです。あなたがいるだけで場がやわらかく和み、愛と美を現実に咲かせる美の錬金術師です。'
+  },
+  {
+    id: 'lemuria', name: 'レムリア', nameEn: 'Lemuria',
+    colors: ['opal','#f0f8ff','#c0a0d0','#f8d0e0','#40b0c0','#40c0a0'],
+    colorNames: ['オパール／虹色','パールホワイト','ラベンダー','淡いピンク','アクアブルー','ターコイズ'],
+    colorSpecial: ['opal', null, null, null, null, null],
+    motifs: ['海','イルカ','人魚','女神','妖精','水晶の浜辺'],
+    chartColor: '#38b8b0',
+    desc: 'あなたの魂には、レムリアのやわらかな海の記憶が深く流れています。海や水辺に懐かしさと切なさを感じ、目に見えない世界——妖精や精霊——をリアルに感じ取る繊細な魂です。争うのではなく、調和と祈りによって愛を思い出させる存在です。'
+  },
+  {
+    id: 'atlantis', name: 'アトランティス', nameEn: 'Atlantis',
+    colors: ['#2040a0','#2060c0','#204080','#d0a020','#f0f0f8','#4080a0'],
+    colorNames: ['ロイヤルブルー','ラピスブルー','ネイビー','ゴールド','クリスタルホワイト','ディープターコイズ'],
+    motifs: ['水晶神殿','光のピラミッド','神聖幾何学','叡智の図書館','クリスタルタワー','古代都市'],
+    chartColor: '#2858b8',
+    desc: 'あなたの魂には、アトランティスの高度な叡智と水晶の記憶が流れています。古代文明や遺跡の構造・目的に強く惹かれ、体験や学びを人に伝えられる形にまとめる設計者の才能があります。能力を使うことへの慎重さも、愛と責任を持つ魂のサインです。'
+  }
+];
+
+const QUESTIONS = [
+  // シリウス
+  { cat: 'sirius', text: '海や水辺にいると、懐かしいような静けさを感じる' },
+  { cat: 'sirius', text: '人を「癒す」というより「本質を照らす」役割に惹かれる' },
+  { cat: 'sirius', text: 'エジプト、マヤ、インドなど古代の神殿や聖地、またはイルカ・クジラに、懐かしいような親しみを感じる' },
+  // プレアデス
+  { cat: 'pleiades', text: '人の感情や場の空氣を、言葉がなくても敏感に感じ取れる' },
+  { cat: 'pleiades', text: '争いや対立よりも、調和や優しさで場をまとめたいと思う' },
+  { cat: 'pleiades', text: '花、天使、柔らかい光、癒しのイメージに魂が反応する' },
+  // アルクトゥルス
+  { cat: 'arcturus', text: '神聖幾何学、周波数、エネルギーの仕組みに強く惹かれる' },
+  { cat: 'arcturus', text: 'スピリチュアルな感覚を、理論や体系として理解したくなる' },
+  { cat: 'arcturus', text: 'AIやテクノロジーに、霊的・宇宙的な可能性を感じる' },
+  // アンドロメダ
+  { cat: 'andromeda', text: '管理や束縛、上下関係に強い違和感や窮屈さを感じる' },
+  { cat: 'andromeda', text: '「既存の枠組みって本当に必要？」と根本から問い直すことがある' },
+  { cat: 'andromeda', text: 'ひとりの時間が必要で、深く関わりながらも依存はしたくない' },
+  // リラ
+  { cat: 'lyra', text: '猫、ライオンなど猫科の動物に特別な親しみを感じる' },
+  { cat: 'lyra', text: '「ここは自分の本当の居場所じゃない」という感覚が昔からある' },
+  { cat: 'lyra', text: '誰かに従うより、自分の道を自分で切り開きたいと強く思う' },
+  // ベガ
+  { cat: 'vega', text: '音楽、色彩、詩、自然の美しさに、魂の奥から反応する' },
+  { cat: 'vega', text: '感情を表に出さなくても、自分の中に明確なYes/Noの基準があり、それに従って行動している' },
+  { cat: 'vega', text: '対立的・攻撃的なネガティブな空氣が漂う場所にいると、人より強く消耗する' },
+  // オリオン
+  { cat: 'orion', text: '嘘や矛盾、不正義に対して、人より強く敏感に反応する' },
+  { cat: 'orion', text: '光も闇も両方自分の中にあると感じ、善悪や正義といったテーマが人生に繰り返し現れる' },
+  { cat: 'orion', text: '人生に葛藤や試練が多く、それが自分を深めてきたと感じる' },
+  // 金星
+  { cat: 'venus', text: '行く場所や身の回りの環境について、美しさ・香り・心地よさに自然とアンテナが向く' },
+  { cat: 'venus', text: '愛を受け取ること・与えることが、人生の大きなテーマだと感じる' },
+  { cat: 'venus', text: '自分がいると場が和む、「癒し系」と言われることがある' },
+  // レムリア
+  { cat: 'lemuria', text: '海や水辺に、懐かしさと同時にどこか切ない感覚を覚える' },
+  { cat: 'lemuria', text: '目に見えるものや言葉よりも、その場の雰囲氣・感覚・なんとなくの印象で物事を捉えることが多い' },
+  { cat: 'lemuria', text: '妖精、精霊、自然の中に宿る見えない存在をリアルに感じたり、信じている' },
+  // アトランティス
+  { cat: 'atlantis', text: '古代文明や遺跡、「誰がどうやって作ったんだろう」と感じる建造物の構造や目的に強く惹かれる' },
+  { cat: 'atlantis', text: '自分の能力や影響力を使うことに、どこか怖さや慎重さがある' },
+  { cat: 'atlantis', text: '自分が体験したことや学んだことを、人に伝えられる形（講座・コンテンツ・メソッド）にまとめたくなる' }
+];
+
+// ===== STATE =====
+let currentQ = 0;
+let answers = new Array(30).fill(null);
+
+// ===== STARS =====
+function createStars() {
+  const container = document.getElementById('stars');
+  const starColors = [
+    'rgba(255,255,255,VAR)',   // 白
+    'rgba(220,230,255,VAR)',   // 青白
+    'rgba(255,250,220,VAR)',   // 温かい白
+    'rgba(240,220,255,VAR)',   // 薄紫白
+    'rgba(200,230,255,VAR)',   // 水色白
+  ];
+  for (let i = 0; i < 140; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 3 + 0.5;
+    const op = (0.25 + Math.random() * 0.55).toFixed(2);
+    const colorTemplate = starColors[Math.floor(Math.random() * starColors.length)];
+    const color = colorTemplate.replace('VAR', op);
+    s.style.cssText = `
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      width:${size}px;
+      height:${size}px;
+      background:${color};
+      --dur:${2+Math.random()*5}s;
+      --op:${op};
+      animation-delay:${Math.random()*6}s;
+    `;
+    container.appendChild(s);
+  }
+}
+createStars();
+
+// ===== QUIZ =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers = new Array(30).fill(null);
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  document.getElementById('q-number').textContent = `Q ${String(currentQ+1).padStart(2,'0')}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('progress-label').textContent = `${currentQ+1} / 30`;
+  document.getElementById('progress-bar').style.width = `${((currentQ+1)/30)*100}%`;
+  document.getElementById('btn-prev').disabled = currentQ === 0;
+  document.getElementById('btn-next').disabled = answers[currentQ] === null;
+
+  // ボタン状態リセット
+  const btns = document.querySelectorAll('.scale-btn');
+  const scores = [2,1,0,-1,-2];
+  btns.forEach((btn, i) => {
+    btn.classList.remove('selected');
+    if (answers[currentQ] === scores[i]) btn.classList.add('selected');
+  });
+}
+
+function selectAnswer(score, btn) {
+  answers[currentQ] = score;
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQuestion() {
+  if (answers[currentQ] === null) return;
+  if (currentQ < 29) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    currentQ--;
+    renderQuestion();
+  }
+}
+
+function retryQuiz() {
+  startQuiz();
+}
+
+// ===== RESULT =====
+function showResult() {
+  // スコア集計
+  const scores = {};
+  CATEGORIES.forEach(c => scores[c.id] = 0);
+  QUESTIONS.forEach((q, i) => {
+    if (answers[i] !== null) scores[q.cat] += answers[i];
+  });
+
+  // 正規化（min-max → 0以上に）
+  const minScore = -6;
+  const maxScore = 6;
+  const normalized = {};
+  let total = 0;
+  CATEGORIES.forEach(c => {
+    normalized[c.id] = Math.max(0, scores[c.id] - minScore);
+    total += normalized[c.id];
+  });
+
+  // パーセント計算
+  const percents = {};
+  if (total === 0) {
+    CATEGORIES.forEach(c => percents[c.id] = 10);
+    total = 100;
+  } else {
+    CATEGORIES.forEach(c => {
+      percents[c.id] = Math.round((normalized[c.id] / total) * 100);
+    });
+    // 合計100に調整
+    let sum = Object.values(percents).reduce((a,b)=>a+b,0);
+    const diff = 100 - sum;
+    const topCat = CATEGORIES.sort((a,b) => percents[b.id]-percents[a.id])[0];
+    percents[topCat.id] += diff;
+  }
+
+  // ソート
+  const sorted = CATEGORIES.slice().sort((a,b) => percents[b.id]-percents[a.id]);
+
+  showScreen('screen-result');
+  document.getElementById('donut-top-name').textContent = sorted[0].name;
+  renderDonut(sorted, percents);
+  renderLegend(sorted, percents);
+  renderDetails(sorted, percents);
+}
+
+function renderDonut(sorted, percents) {
+  const svg = document.getElementById('donut-svg');
+  svg.innerHTML = '';
+  const cx=100, cy=100, r=80, strokeW=28;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+
+  sorted.forEach((cat, i) => {
+    const pct = percents[cat.id] / 100;
+    const dash = circumference * pct;
+    const gap = circumference - dash;
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', cat.chartColor);
+    circle.setAttribute('stroke-width', strokeW);
+    circle.setAttribute('stroke-dasharray', `${dash} ${gap}`);
+    circle.setAttribute('stroke-dashoffset', -offset * circumference);
+    circle.style.transition = 'stroke-dasharray 1s ease';
+    svg.appendChild(circle);
+    offset += pct;
+  });
+
+  // 中心の穴
+  const inner = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  inner.setAttribute('cx', cx);
+  inner.setAttribute('cy', cy);
+  inner.setAttribute('r', r - strokeW/2 - 2);
+  inner.setAttribute('fill', '#0a0812');
+  svg.appendChild(inner);
+}
+
+function renderLegend(sorted, percents) {
+  const container = document.getElementById('legend');
+  container.innerHTML = '';
+  sorted.forEach(cat => {
+    const pct = percents[cat.id];
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `
+      <div class="legend-color" style="background:${cat.chartColor}"></div>
+      <div class="legend-name">${cat.name}</div>
+      <div class="legend-bar-wrap">
+        <div class="legend-bar" style="width:${pct}%;background:${cat.chartColor}"></div>
+      </div>
+      <div class="legend-pct">${pct}%</div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function renderDetails(sorted, percents) {
+  const container = document.getElementById('result-details');
+  container.innerHTML = '';
+  const top3 = sorted.slice(0, 3);
+
+  top3.forEach((cat, i) => {
+    const pct = percents[cat.id];
+    const ranks = ['✦ 第1位', '✧ 第2位', '· 第3位'];
+    const card = document.createElement('div');
+    card.className = 'detail-card';
+    card.innerHTML = `
+      <div class="detail-rank">${ranks[i]}</div>
+      <div class="detail-name">${cat.name} <span style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em">${cat.nameEn}</span></div>
+      <div class="detail-pct">${pct}%</div>
+      <div class="detail-divider"></div>
+      <div class="detail-desc">${cat.desc}</div>
+      <div class="detail-colors-label">魂の色</div>
+      <div class="detail-colors">
+        ${cat.colors.map((c,j)=>{
+          const special = cat.colorSpecial ? cat.colorSpecial[j] : null;
+          let bg = '';
+          if (special === 'opal') {
+            bg = 'background: conic-gradient(from 0deg, #f8c0d8, #c0d0f8, #c0f0e0, #f0f0c0, #f0c8f0, #c0e8f8, #f8c0d8); border: 1px solid rgba(255,255,255,0.6);';
+          } else if (special === 'hologram') {
+            bg = 'background: linear-gradient(135deg, #d0c8ff, #a0d8ff, #d0f8f0, #f0d0ff, #d0c8ff); border: 1px solid rgba(200,200,255,0.5);';
+          } else {
+            bg = `background:${c};`;
+          }
+          return `<div class="color-chip-wrap">
+            <div class="color-chip" style="${bg}" title="${cat.colorNames[j]}"></div>
+            <span class="color-chip-name">${cat.colorNames[j]}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="detail-motifs-label">魂のシンボル</div>
+      <div class="detail-motifs">
+        ${cat.motifs.map(m=>`<span class="motif-tag">${m}</span>`).join('')}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>
