@@ -459,10 +459,11 @@
 
   .donut-center-name {
     font-family: 'Noto Serif JP', serif;
-    font-size: 1.1rem;
+    font-size: clamp(0.75rem, 2vw, 1.1rem);
     color: var(--gold-light);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     display: block;
+    line-height: 1.5;
   }
 
   /* 凡例 */
@@ -1134,7 +1135,10 @@ function showResult() {
   const sorted = CATEGORIES.slice().sort((a,b) => percents[b.id]-percents[a.id]);
 
   showScreen('screen-result');
-  document.getElementById('donut-top-name').textContent = sorted[0].name;
+  // 同率1位を全て取得
+  const topPct = percents[sorted[0].id];
+  const topNames = sorted.filter(c => percents[c.id] === topPct).map(c => c.name);
+  document.getElementById('donut-top-name').textContent = topNames.join(' · ');
   renderDonut(sorted, percents);
   renderLegend(sorted, percents);
   renderDetails(sorted, percents);
