@@ -450,20 +450,22 @@
 
   .donut-center-label {
     font-family: 'Noto Serif JP', serif;
-    font-size: 0.7rem;
-    color: var(--text-muted);
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.88);
     letter-spacing: 0.15em;
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 
   .donut-center-name {
     font-family: 'Noto Serif JP', serif;
-    font-size: clamp(0.75rem, 2vw, 1.1rem);
-    color: var(--gold-light);
-    letter-spacing: 0.05em;
+    font-weight: 400;
+    font-size: clamp(0.85rem, 2.4vw, 1.2rem);
+    color: #ffffff;
+    letter-spacing: 0.08em;
     display: block;
     line-height: 1.5;
+    text-shadow: 0 0 12px rgba(200,180,255,0.6);
   }
 
   /* 凡例 */
@@ -526,16 +528,95 @@
   }
 
   .detail-card {
+    position: relative;
     background: rgba(255, 252, 255, 0.75);
     border-radius: 4px;
     padding: 28px 28px;
     border-left: 3px solid #9070d0;
     backdrop-filter: blur(16px);
     box-shadow: 0 4px 30px rgba(120,90,180,0.12);
+    overflow: visible;
   }
 
   .detail-card:first-child {
     border-left-color: var(--gold);
+  }
+
+  /* ===== キラキラ枠（星の光オーラ）===== */
+  .detail-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 5px;
+    padding: 1px;
+    pointer-events: none;
+    background: conic-gradient(from var(--shimmer-angle, 0deg),
+      transparent 0%, rgba(255,255,255,0.9) 8%, transparent 20%, transparent 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: shimmer-rotate 4.5s linear infinite;
+    opacity: 0.9;
+  }
+
+  .detail-card.rank-2::before,
+  .detail-card.rank-3::before {
+    animation-duration: 6.5s;
+    opacity: 0.6;
+  }
+
+  @property --shimmer-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  @keyframes shimmer-rotate {
+    to { --shimmer-angle: 360deg; }
+  }
+
+  /* 星の煌めき（角の飾り） */
+  .detail-sparkle {
+    position: absolute;
+    color: rgba(255,255,255,0.95);
+    font-size: 0.75rem;
+    pointer-events: none;
+    animation: twinkle 2.4s ease-in-out infinite;
+    text-shadow: 0 0 6px rgba(255,255,255,0.8);
+  }
+  .detail-sparkle.top-left { top: 10px; left: 12px; animation-delay: 0.2s; }
+  .detail-sparkle.bottom-right { bottom: 10px; right: 12px; font-size: 0.6rem; animation-delay: 1.1s; }
+
+  /* 画像フレーム（パールホワイトの光の縁取り） */
+  .detail-image-frame {
+    width: 150px;
+    aspect-ratio: 3 / 4;
+    margin: 0 auto 22px;
+    padding: 5px;
+    border-radius: 8px;
+    background: linear-gradient(150deg, #ffffff 0%, #f0e8ff 35%, #d8c8ff 60%, #ffffff 100%);
+    box-shadow:
+      0 0 18px rgba(255,255,255,0.5),
+      0 0 34px rgba(190,160,255,0.35),
+      inset 0 0 0 1px rgba(255,255,255,0.6);
+    animation: frame-glow 3.2s ease-in-out infinite;
+  }
+
+  .detail-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  @keyframes frame-glow {
+    0%, 100% {
+      box-shadow: 0 0 18px rgba(255,255,255,0.5), 0 0 34px rgba(190,160,255,0.35), inset 0 0 0 1px rgba(255,255,255,0.6);
+    }
+    50% {
+      box-shadow: 0 0 26px rgba(255,255,255,0.75), 0 0 46px rgba(190,160,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.8);
+    }
   }
 
   .detail-rank {
@@ -777,6 +858,7 @@
 const CATEGORIES = [
   {
     id: 'sirius', name: 'シリウス', nameEn: 'Sirius',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/7puls75k2ltbthj741cqn/Sirius.png?rlkey=fteuzaii9c5kpvb9xxjjjxxxh&st=k44yrpgq&raw=1',
     colors: ['#1a3a6e','#2255a8','#1e8fa8','#5cc8d8','#c0d8e8','#d4c080'],
     colorNames: ['ディープブルー','ロイヤルブルー','ターコイズ','アクアブルー','シルバー','ホワイトゴールド'],
     motifs: ['古代神殿','イルカ','クジラ','深海','水の女神','神官'],
@@ -785,6 +867,7 @@ const CATEGORIES = [
   },
   {
     id: 'pleiades', name: 'プレアデス', nameEn: 'Pleiades',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/rywew5os3ljy96u8ih41n/Pleiades.png?rlkey=ifkc04vzgyg7crgij35s0n3of&st=cd38vui7&raw=1',
     colors: ['#f0b8c8','#c8a0d8','#f8f0f8','#a8c8e8','#e0a8b8','opal'],
     colorNames: ['ペールピンク','ラベンダー','ミルキーホワイト','パステルブルー','ローズゴールド','オパール'],
     colorSpecial: [null, null, null, null, null, 'opal'],
@@ -794,6 +877,7 @@ const CATEGORIES = [
   },
   {
     id: 'arcturus', name: 'アルクトゥルス', nameEn: 'Arcturus',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/y2v5gsurrtoi5mq5mrvbm/Arcturus.png?rlkey=gibp66b9y7cq6o9pnvh57423a&st=mjl005wx&raw=1',
     colors: ['#c8b0f0','#9060d8','#e0d8ff','#f5f0ff','#4080f0','#40c8e8'],
     colorNames: ['淡いラベンダー','バイオレット','ホログラム','電氣的な白','ネオンブルー','シアン'],
     colorSpecial: [null, null, 'hologram', null, null, null],
@@ -803,6 +887,7 @@ const CATEGORIES = [
   },
   {
     id: 'andromeda', name: 'アンドロメダ', nameEn: 'Andromeda',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/gqd0amyt1wp3t2gfg1pc3/Andromeda.png?rlkey=3wdeed85fczhbdsxxjy4zm1j8&st=7w9d6kix&raw=1',
     colors: ['#7030c0','#4040c8','#c020a0','#4060d0','#101030','#f0f0ff'],
     colorNames: ['ギャラクシーパープル','インディゴ','マゼンタ','コズミックブルー','星空色','虹色の光'],
     motifs: ['銀河','自由の翼','枠を超える扉','宇宙の旅','無限','星雲'],
@@ -811,6 +896,7 @@ const CATEGORIES = [
   },
   {
     id: 'lyra', name: 'リラ', nameEn: 'Lyra',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/1c64yigjzpw438yk4xglr/Lyra.png?rlkey=iee3g91ysotadtw153isie78r&st=wxfwuenh&raw=1',
     colors: ['#d4a010','#e8c830','#c06010','#e08030','#d89060','#f0c890'],
     colorNames: ['ゴールド','サンイエロー','アンバー','オレンジ','ブロンズ','ピーチゴールド'],
     motifs: ['獅子','太陽','王冠','古代王国','猫科','原初の炎'],
@@ -819,6 +905,7 @@ const CATEGORIES = [
   },
   {
     id: 'vega', name: 'ベガ', nameEn: 'Vega',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/8u2xpqh9z2qxmcfubnuel/Vega.png?rlkey=jxrqhh23fjrek72a5rfiti2sc&st=5dtn9ecr&raw=1',
     colors: ['#80c0e0','#80e0c0','#c0c0d8','#a0d0d0','#f0f0f8','#d8e8f8'],
     colorNames: ['アイスブルー','ミントグリーン','シルバー','淡いターコイズ','パールホワイト','透明な青'],
     motifs: ['竪琴','音の光','色彩','自然の調和','透明な風','音楽'],
@@ -827,6 +914,7 @@ const CATEGORIES = [
   },
   {
     id: 'orion', name: 'オリオン', nameEn: 'Orion',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/79u2l8fvz33yrz9f3cili/Orion.png?rlkey=ibqo3yd6th8r46slge2n4yuhs&st=cbq3h2ns&raw=1',
     colors: ['#102040','#402080','#101010','#808090','#c02020','#607080'],
     colorNames: ['ミッドナイトブルー','ダークパープル','ブラック','シルバー','レッド','ブルーグレー'],
     motifs: ['星の戦士','真実の剣','光と闇','統合の炎','剣','夜空'],
@@ -835,6 +923,7 @@ const CATEGORIES = [
   },
   {
     id: 'venus', name: '金星', nameEn: 'Venus',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/yxl1suuf8bdaqmzrr6334/Venus.png?rlkey=ygycuqh3yj6ma7injf94xufvg&st=cofxiig3&raw=1',
     colors: ['#f0a0b8','#a0d0a0','#40c080','#f0d890','#c07040','#f8f0e8'],
     colorNames: ['ローズピンク','ペールグリーン','エメラルド','シャンパンゴールド','コッパー','パールホワイト'],
     motifs: ['薔薇','ハート','真珠','女神','豊かさ','愛の神殿'],
@@ -843,6 +932,7 @@ const CATEGORIES = [
   },
   {
     id: 'lemuria', name: 'レムリア', nameEn: 'Lemuria',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/bdgs1wvv79q6r73znkl30/Lemuria.png?rlkey=22vjb502kk6lvhf4m8e1cn2xp&st=n8mnei44&raw=1',
     colors: ['opal','#f0f8ff','#c0a0d0','#f8d0e0','#40b0c0','#60d0d8'],
     colorNames: ['オパール／虹色','パールホワイト','ラベンダー','淡いピンク','アクアブルー','ターコイズ'],
     colorSpecial: ['opal', null, null, null, null, null],
@@ -853,6 +943,7 @@ const CATEGORIES = [
   },
   {
     id: 'atlantis', name: 'アトランティス', nameEn: 'Atlantis',
+    imageUrl: 'https://dl.dropboxusercontent.com/scl/fi/xyz2wugxt0j1bwlb56dqv/Atlantis.png?rlkey=cwu44pkeeabezvquybpxudqwp&st=smlzpvjr&raw=1',
     colors: ['#2040a0','#2060c0','#204080','#d0a020','#f0f0f8','#4080a0'],
     colorNames: ['ロイヤルブルー','ラピスブルー','ネイビー','ゴールド','クリスタルホワイト','ディープターコイズ'],
     motifs: ['水晶神殿','光のピラミッド','神聖幾何学','叡智の図書館','クリスタルタワー','古代都市'],
@@ -1233,9 +1324,16 @@ function renderDetails(sorted, percents) {
   top3.forEach((cat, i) => {
     const pct = percents[cat.id];
     const ranks = ['✦ 第1位', '✧ 第2位', '· 第3位'];
+    const rankClass = ['rank-1', 'rank-2', 'rank-3'][i];
     const card = document.createElement('div');
-    card.className = 'detail-card';
+    card.className = `detail-card ${rankClass}`;
     card.innerHTML = `
+      <span class="detail-sparkle top-left">✦</span>
+      <span class="detail-sparkle bottom-right">✧</span>
+      ${cat.imageUrl ? `
+      <div class="detail-image-frame">
+        <img class="detail-image" src="${cat.imageUrl}" alt="${cat.name}の女神アート" loading="lazy">
+      </div>` : ''}
       <div class="detail-rank">${ranks[i]}</div>
       <div class="detail-name">${cat.name} <span style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em">${cat.nameEn}</span></div>
       <div class="detail-pct">${pct}%</div>
