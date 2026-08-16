@@ -538,7 +538,7 @@
     overflow: visible;
   }
 
-  .detail-card:first-child {
+  .detail-card.rank-1 {
     border-left-color: var(--gold);
   }
 
@@ -589,7 +589,7 @@
 
   /* 画像フレーム（パールホワイトの光の縁取り） */
   .detail-image-frame {
-    width: 150px;
+    width: min(300px, 68%);
     aspect-ratio: 3 / 4;
     margin: 0 auto 22px;
     padding: 5px;
@@ -1319,14 +1319,21 @@ function renderLegend(sorted, percents) {
 function renderDetails(sorted, percents) {
   const container = document.getElementById('result-details');
   container.innerHTML = '';
-  const top3 = sorted.slice(0, 3);
 
-  top3.forEach((cat, i) => {
+  // 上位から「異なる%の値」を3つ抽出（同率はまとめて1つの順位として扱う）
+  const distinctPercents = [...new Set(sorted.map(c => percents[c.id]))].slice(0, 3);
+
+  // その値に該当するカテゴリを全て表示対象にする（同率は複数枚になる）
+  const displayList = sorted.filter(c => distinctPercents.includes(percents[c.id]));
+
+  const rankLabels = ['✦ 第1位', '✧ 第2位', '· 第3位'];
+  const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
+
+  displayList.forEach((cat) => {
     const pct = percents[cat.id];
-    const ranks = ['✦ 第1位', '✧ 第2位', '· 第3位'];
-    const rankClass = ['rank-1', 'rank-2', 'rank-3'][i];
+    const rankIndex = distinctPercents.indexOf(pct);
     const card = document.createElement('div');
-    card.className = `detail-card ${rankClass}`;
+    card.className = `detail-card ${rankClasses[rankIndex]}`;
     card.innerHTML = `
       <span class="detail-sparkle top-left">✦</span>
       <span class="detail-sparkle bottom-right">✧</span>
@@ -1334,7 +1341,7 @@ function renderDetails(sorted, percents) {
       <div class="detail-image-frame">
         <img class="detail-image" src="${cat.imageUrl}" alt="${cat.name}の女神アート" loading="lazy">
       </div>` : ''}
-      <div class="detail-rank">${ranks[i]}</div>
+      <div class="detail-rank">${rankLabels[rankIndex]}</div>
       <div class="detail-name">${cat.name} <span style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em">${cat.nameEn}</span></div>
       <div class="detail-pct">${pct}%</div>
       <div class="detail-divider"></div>
