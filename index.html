@@ -919,7 +919,7 @@ const CATEGORIES = [
     colorNames: ['ミッドナイトブルー','ダークパープル','ブラック','シルバー','レッド','ブルーグレー'],
     motifs: ['星の戦士','真実の剣','光と闇','統合の炎','剣','夜空'],
     chartColor: '#a8b0c0',
-    desc: 'あなたの魂には、オリオンの真実を求める戦士の記憶が刻まれています。嘘や矛盾に人より強く反応し、自分の内側にある二面性と真剣に向き合ってきました。葛藤や試練が多い人生も、すべて魂を深めるための統合のプロセスです。'
+    desc: 'あなたの魂には、オリオンの真実を求める戦士の記憶が刻まれています。嘘や矛盾を前にすると心の奥が強くざわつき、自分の内側にある二面性と真剣に向き合ってきました。葛藤や試練が多い人生も、すべて魂を深めるための統合のプロセスです。'
   },
   {
     id: 'venus', name: '金星', nameEn: 'Venus',
@@ -954,13 +954,13 @@ const CATEGORIES = [
 
 const QUESTIONS = [
   // 第1周：各星・文明から1問目
-  { cat: 'sirius',    text: '海や水辺にいると、懐かしいような静けさを感じる' },
+  { cat: 'sirius',    text: '夜空を見上げると、懐かしさや、何かに導かれているような感覚を覚える' },
   { cat: 'pleiades',  text: '人の感情や場の空氣を、言葉がなくても敏感に感じ取れる' },
   { cat: 'arcturus',  text: '神聖幾何学、周波数、エネルギーの仕組みに強く惹かれる' },
   { cat: 'andromeda', text: '管理や束縛、上下関係に強い違和感や窮屈さを感じる' },
   { cat: 'lyra',      text: '猫、ライオンなど猫科の動物に特別な親しみを感じる' },
   { cat: 'vega',      text: '音楽、色彩、詩、自然の美しさに、魂の奥から反応する' },
-  { cat: 'orion',     text: '嘘や矛盾、不正義に対して、人より強く敏感に反応する' },
+  { cat: 'orion',     text: '嘘や矛盾、不正義を目にすると、心の奥が強くざわつき、見過ごせなくなる' },
   { cat: 'venus',     text: '行く場所や身の回りの環境について、美しさ・香り・心地よさに自然とアンテナが向く' },
   { cat: 'lemuria',   text: '海や水辺に、懐かしさと同時にどこか切ない感覚を覚える' },
   { cat: 'atlantis',  text: '古代文明や遺跡、「誰がどうやって作ったんだろう」と感じる建造物の構造や目的に強く惹かれる' },
@@ -981,7 +981,7 @@ const QUESTIONS = [
   { cat: 'arcturus',  text: 'AIやテクノロジーに、霊的・宇宙的な可能性を感じる' },
   { cat: 'andromeda', text: 'ひとりの時間が必要で、深く関わりながらも依存はしたくない' },
   { cat: 'lyra',      text: '誰かに従うより、自分の道を自分で切り開きたいと強く思う' },
-  { cat: 'vega',      text: '対立的・攻撃的なネガティブな空氣が漂う場所にいると、人より強く消耗する' },
+  { cat: 'vega',      text: '対立的・攻撃的な空氣が漂う場所にいると、ひどくエネルギーを消耗しぐったりする' },
   { cat: 'orion',     text: '人生に葛藤や試練が多く、それが自分を深めてきたと感じる' },
   { cat: 'venus',     text: '自分がいると場が和む、「癒し系」と言われることがある' },
   { cat: 'lemuria',   text: '妖精、精霊、自然の中に宿る見えない存在をリアルに感じたり、信じている' },
@@ -1324,20 +1324,32 @@ function renderDetails(sorted, percents) {
   const container = document.getElementById('result-details');
   container.innerHTML = '';
 
-  // 上位から「異なる%の値」を3つ抽出（同率はまとめて1つの順位として扱う）
-  const distinctPercents = [...new Set(sorted.map(c => percents[c.id]))].slice(0, 3);
+  // 「見た目の順位」を計算（同率は同じ順位、次の順位はその分だけ繰り下げる方式＝競技ランキング式）
+  // 例）19,13,13,9,9,9 → 順位は 1,2,2,4,4,4 となり、
+  //     「4位」に繰り下がった9%グループは3位以内に入らないため表示されない。
+  //     一方、3位が同率4つなら 1,2,3,3,3,3 となり、全て3位として表示される。
+  const ranks = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i === 0) {
+      ranks.push(1);
+    } else if (percents[sorted[i].id] === percents[sorted[i-1].id]) {
+      ranks.push(ranks[i-1]);
+    } else {
+      ranks.push(i + 1);
+    }
+  }
 
-  // その値に該当するカテゴリを全て表示対象にする（同率は複数枚になる）
-  const displayList = sorted.filter(c => distinctPercents.includes(percents[c.id]));
+  const displayList = sorted.filter((cat, i) => ranks[i] <= 3);
+  const displayRanks = ranks.filter(r => r <= 3);
 
-  const rankLabels = ['✦ 第1位', '✧ 第2位', '· 第3位'];
-  const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
+  const rankLabels = { 1: '✦ 第1位', 2: '✧ 第2位', 3: '· 第3位' };
+  const rankClasses = { 1: 'rank-1', 2: 'rank-2', 3: 'rank-3' };
 
-  displayList.forEach((cat) => {
+  displayList.forEach((cat, idx) => {
     const pct = percents[cat.id];
-    const rankIndex = distinctPercents.indexOf(pct);
+    const rankNum = displayRanks[idx];
     const card = document.createElement('div');
-    card.className = `detail-card ${rankClasses[rankIndex]}`;
+    card.className = `detail-card ${rankClasses[rankNum]}`;
     card.innerHTML = `
       <span class="detail-sparkle top-left">✦</span>
       <span class="detail-sparkle bottom-right">✧</span>
@@ -1345,7 +1357,7 @@ function renderDetails(sorted, percents) {
       <div class="detail-image-frame">
         <img class="detail-image" src="${cat.imageUrl}" alt="${cat.name}の女神アート" loading="lazy">
       </div>` : ''}
-      <div class="detail-rank">${rankLabels[rankIndex]}</div>
+      <div class="detail-rank">${rankLabels[rankNum]}</div>
       <div class="detail-name">${cat.name} <span style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em">${cat.nameEn}</span></div>
       <div class="detail-pct">${pct}%</div>
       <div class="detail-divider"></div>
