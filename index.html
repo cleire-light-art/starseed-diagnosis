@@ -992,6 +992,11 @@ const QUESTIONS = [
 let currentQ = 0;
 let answers = new Array(30).fill(null);
 
+// 診断結果の「差の出やすさ」を調整する係数。
+// 大きくするほどカテゴリ間の％差が強調され、団子状態になりにくくなる。
+// 0に近づけるほど均等（10%ずつ）に近づく。0.25〜0.45あたりが目安。
+const SCORE_SHARPNESS = 0.32;
+
 // ===== STARS =====
 function createStars() {
   const container = document.getElementById('stars');
@@ -1197,31 +1202,30 @@ function showResult() {
     if (answers[i] !== null) scores[q.cat] += answers[i];
   });
 
-  // 正規化（min-max → 0以上に）
-  const minScore = -6;
-  const maxScore = 6;
-  const normalized = {};
-  let total = 0;
+  // ===== パーセント計算（ソフトマックス方式） =====
+  // 従来の「+6して合計に対する割合」方式は、全カテゴリに一律+6という
+  // "下駄"を履かせてから比率を取るため、生スコアの差が薄まりやすかった。
+  // （例：Sirius=+2、他9カテゴリ=0 でも、旧方式では約13% vs 約10%にしかならない）
+  //
+  // ここでは生スコアの差をそのまま指数関数で強調する「ソフトマックス」を採用。
+  // SCORE_SHARPNESS が差の強調度合いを決める。
+  const weights = {};
+  let totalWeight = 0;
   CATEGORIES.forEach(c => {
-    normalized[c.id] = Math.max(0, scores[c.id] - minScore);
-    total += normalized[c.id];
+    const w = Math.exp(scores[c.id] * SCORE_SHARPNESS);
+    weights[c.id] = w;
+    totalWeight += w;
   });
 
-  // パーセント計算
   const percents = {};
-  if (total === 0) {
-    CATEGORIES.forEach(c => percents[c.id] = 10);
-    total = 100;
-  } else {
-    CATEGORIES.forEach(c => {
-      percents[c.id] = Math.round((normalized[c.id] / total) * 100);
-    });
-    // 合計100に調整
-    let sum = Object.values(percents).reduce((a,b)=>a+b,0);
-    const diff = 100 - sum;
-    const topCat = CATEGORIES.sort((a,b) => percents[b.id]-percents[a.id])[0];
-    percents[topCat.id] += diff;
-  }
+  CATEGORIES.forEach(c => {
+    percents[c.id] = Math.round((weights[c.id] / totalWeight) * 100);
+  });
+  // 合計100に微調整（丸め誤差を最上位カテゴリで吸収）
+  let sum = Object.values(percents).reduce((a,b)=>a+b,0);
+  const diff = 100 - sum;
+  const topCat = CATEGORIES.slice().sort((a,b) => percents[b.id]-percents[a.id])[0];
+  percents[topCat.id] += diff;
 
   // ソート
   const sorted = CATEGORIES.slice().sort((a,b) => percents[b.id]-percents[a.id]);
